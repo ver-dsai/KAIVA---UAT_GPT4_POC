@@ -1,0 +1,132 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.3",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "Select a Workflow",
+        "weight": "Bolder",
+        "size": "Large"
+      },
+      {
+        "type": "TextBlock",
+        "text": "Click a button to trigger the corresponding workflow."
+      }
+    ],
+    "actions": [
+      {
+        "type": "Action.Submit",
+        "title": "Call Workato API",
+        "data": {
+          "action": "Call workato API",
+          "workflowId": "001",
+          "apiUrl": "https://callapi-httptrigger2.azurewebsites.net/api/callWorkato", 
+          "method": "POST",
+          "headers": {
+            "key": "api-token"
+          },
+          "body": {
+            "Message": "string"
+          }
+        }
+      },
+      {
+        "type": "Action.Submit",
+        "title": "Get All Folders",
+        "data": {
+          "action": "Get all existing folders",
+          "workflowId": "002",
+          "apiUrl": "https://callapi-httptrigger2.azurewebsites.net/api/getAllFolders", 
+          "method": "GET",
+          "headers": {
+              "accept": "application/json",
+              "authorization": "Bearer ${token}"
+          }
+        }
+      },
+      {
+        "type": "Action.Submit",
+        "title": "Create New Folder",
+        "data": {
+          "action": "Create a new folder",
+          "workflowId": "003",
+          "apiUrl": "https://callapi-httptrigger2.azurewebsites.net/api/createNewFolder", 
+          "method": "POST",
+          "headers": {
+            "accept": "application/json",
+            "Content-Type": "application/json;odata.metadata=minimal;odata.streaming=true",
+            "authorization": "Bearer ${token}"
+          },
+          "body": {
+            "Key": "",
+            "DisplayName": "",
+            "FullyQualifiedName": "",
+            "Description": "",
+            "FolderType": "",
+            "ProvisionType": "",
+            "PermissionModel": "",
+            "ParentId": null,
+            "ParentKey": "",
+            "FeedType": "",
+            "Id": null
+          }
+        }
+      },
+      {
+        "type": "Action.Submit",
+        "title": "Start Job",
+        "data": {
+          "action": "Start a Job",
+          "workflowId": "004",
+          "apiUrl": "https://cloud.uipath.com/kslcorporateservicesptelted/DefaultTenant/orchestrator_/odata/Jobs/UiPath.Server.Configuration.OData.StartJobs",
+          "method": "POST",
+          "headers": {
+            "accept": "application/json",
+            "Content-Type": "application/json;odata.metadata=minimal;odata.streaming=true",
+            "authorization": "Bearer ${token}"
+          },
+          "body": {
+            "startInfo": {
+    "ReleaseKey": "string",
+    "Strategy": "All",
+    "RobotIds": [
+      0
+    ],
+    "MachineSessionIds": [
+      0
+    ],
+    "NoOfRobots": 0,
+    "JobsCount": 0,
+    "Source": "",
+    "JobPriority": "",
+    "SpecificPriorityValue": 100,
+    "RuntimeType": "",
+    "InputArguments": "",
+    "Reference": "",
+    "MachineRobots": [
+      {
+        "MachineId": 0,
+        "MachineName": "",
+        "RobotId": 0,
+        "RobotUserName": ""
+      }
+    ],
+    "TargetFramework": "",
+    "ResumeOnSameContext": true,
+    "BatchExecutionKey": "",
+    "RequiresUserInteraction": true,
+    "StopProcessExpression": "",
+    "StopStrategy": "",
+    "KillProcessExpression": "",
+    "RemoteControlAccess": "",
+    "AlertPendingExpression": "",
+    "AlertRunningExpression": "",
+    "RunAsMe": true,
+    "ParentOperationId": ""
+  }
+          }
+        }
+      }
+    ]
+  }

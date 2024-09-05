@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "adaptivecards": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.2"
+  }
+}

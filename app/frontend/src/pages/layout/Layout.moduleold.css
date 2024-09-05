@@ -1,0 +1,115 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    background-color: #fdfdfd;
+    color: #5c5c5c;
+}
+.headerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+.headerTitleContainer {
+    display: flex;
+    align-items: center;
+    margin-right: 40px;
+    color: #f2f2f2;
+    text-decoration: none;
+}
+
+.headerLogo {
+    height: 40px;
+}
+
+.headerTitle {
+    margin-left: 12px;
+    font-weight: 600;
+}
+.headerNavList {
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    margin-left: auto; /* Align to the right */
+}
+
+.headerNavPageLink {
+    color: #5c5c5c;
+    text-decoration: none;
+    opacity: 0.75;
+
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-duration: 500ms;
+    transition-property: opacity;
+}
+
+.headerNavPageLink:hover {
+    opacity: 1;
+}
+
+.headerNavPageLinkActive {
+    color: #5c5c5c;
+    text-decoration: none;
+}
+
+.headerNavLeftMargin {
+    margin-left: 20px;
+}
+
+.headerRightText {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    margin-left: 0; /* Set margin-left to 0 to ensure the container is on the extreme left */
+}
+
+.logoContainer {
+    display: flex;
+    align-items: center;
+    margin-right: 10px; /* Adjust margin between logo/text pairs */
+}
+
+.separator {
+    margin-right: 10px;
+    border-right: 1px solid #000;
+    height: 15px;
+}
+
+.githubLogo {
+    width: 30px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0);
+    margin-right: 5px;
+}
+.headerRightTextcompanyName {
+    font-weight: normal;
+    margin-left: auto;
+    align-items: center;
+}
+
+.microsoftLogo {
+    height: 23px;
+    font-weight: 600;
+}
+
+.githubLogo {
+    width: 50px; /* Adjust the width to the desired size */
+    height: 25px; /* Set the height to maintain the aspect ratio */
+    background-color: rgba(255, 255, 255, 0); /* Fully transparent */
+    margin-left: 10px;
+}
+
+.kaivalogo {
+    width: 30px; /* Adjust the width to the desired size */
+    height: 30px; /* Set the height to maintain the aspect ratio */
+    background-color: rgba(255, 255, 255, 0.8); /* Off-white with 80% opacity */
+}
+.headerNavContainer {
+    margin-left: auto; /* Align to the right */
+}
