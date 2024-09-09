@@ -30,11 +30,15 @@ export const Answer = ({
     showFollowupQuestions
 }: Props) => {
 
-    // const followupQuestions = answer.choices[0].context?.followup_questions ?? [];
-    // const messageContent = answer.choices[0].message?.content ?? "";
+    // Ver on 09 Sept 2024: uncommented out 'followupQuestions' and 'messageContent' here (previously it is commented out)
+    const followupQuestions = answer.choices[0].context?.followup_questions ?? [];
+    const messageContent = answer.choices[0].message?.content ?? "";
 
-    const followupQuestions = answer.choices[0].context.followup_questions;
-    const messageContent = answer.choices[0].message.content;
+    // Ver on 09 Sept 2024: commented out the original 'followupQuestions' and 'messageContent'
+    // const followupQuestions = answer.choices[0].context.followup_questions;
+    // const messageContent = answer.choices[0].message.content;
+
+
     const parsedAnswer = useMemo(() => parseAnswerToHtml(messageContent, isStreaming, onCitationClicked), [messageContent, isStreaming, onCitationClicked]);
 
     // const parsedAnswer = useMemo(() => parseAnswerToHtml(messageContent, isStreaming, onCitationClicked), [answer]);

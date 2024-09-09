@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@azure/msal-browser": "^3.23.0",
+    "@azure/msal-react": "^2.0.22",
     "adaptivecards": "^3.0.4"
   },
   "devDependencies": {
