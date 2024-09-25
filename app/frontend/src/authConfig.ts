@@ -184,7 +184,12 @@
 //         });
 // };
 
-import { Configuration, LogLevel, IPublicClientApplication } from "@azure/msal-browser";
+
+
+
+// ver: updated library import to include PublicClientApplication
+// import { Configuration, LogLevel, IPublicClientApplication } from "@azure/msal-browser";
+import { Configuration, LogLevel, IPublicClientApplication, PublicClientApplication, InteractionRequiredAuthError } from "@azure/msal-browser";
 
 // URLs for App Services authentication
 const appServicesAuthTokenUrl = ".auth/me";
@@ -211,6 +216,43 @@ interface AuthSetup {
     };
 }
 
+
+////////// Ver: Added codes for msalConfig.tsx - MSAL Configuration for Azure Authentication ///////////////////////////
+
+
+// import { Configuration } from "@azure/msal-browser";
+
+export const msalConfig: Configuration = {
+  auth: {
+    clientId: "a043858e-d00e-40e5-a491-d9f9a02e1aa2",  // Your Azure AD App Registration Client ID //currently using development KAIVA version's clientID
+    authority: "https://login.microsoftonline.com/c1a5f3d0-0f2b-49a8-b7f8-baf494155ee7",  // Your Tenant ID or Authority
+    //comment out original logic for redirectURI - redirect back to the application
+    // // for local testing:
+    // redirectUri: 'http://localhost:50505/' //"https://app-backend-px5hwy56ocjy2.azurewebsites.net/" //"http://localhost:50505/"//"https://app-backend-px5hwy56ocjy2.azurewebsites.net/.auth/login/aad/callback" //callback hv error during deployemnt //updated to use the prod link //"http://127.0.0.1:50505/" //window.location.origin,  // Automatically handles local/prod URLs
+    //for UAT testing:
+    redirectUri: "https://app-backend-px5hwy56ocjy2.azurewebsites.net/"
+
+
+    // // TO TEST OUT THE BELOW CODE FOR MAKING redirectURI DYNAMIC ONCE SETTLE registation of redirectURI in SPA instead of Web
+    // // ver: 20 Sept - updated code to make it dynamic for local and production deployment
+    // // doesnt work
+    // redirectUri: process.env.NODE_ENV === "production" 
+    //         ? "https://app-backend-px5hwy56ocjy2.azurewebsites.net/"
+    //         : "http://localhost:50505/"
+  },
+  cache: {
+    cacheLocation: "localStorage",  // Cache tokens in localStorage for silent authentication
+    storeAuthStateInCookie: false,  // Optional: true for older browsers
+  },
+};
+
+
+// Create an instance of PublicClientApplication using msalConfig (inserted here)
+export const msalInstance = new PublicClientApplication(msalConfig);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 // Fetch the auth setup JSON data from the API if not already cached
 async function fetchAuthSetup(): Promise<AuthSetup> {
     const response = await fetch("/auth_setup");
@@ -226,49 +268,12 @@ const authSetup: AuthSetup = await fetchAuthSetup();
 export const useLogin = authSetup.useLogin;
 export const requireAccessControl = authSetup.requireAccessControl;
 
-//////////////////////// verlicia: edited code
-// export const msalConfig: Configuration = authSetup.msalConfig;
+// // ver: commented out the old version of loginRequest and updated the logic
+// export const loginRequest = authSetup.loginRequest;
+export const loginRequest = {
+  scopes: ["User.Read", "openid", "profile", "offline_access"]
+};
 
-export const msalConfig = {
-    auth: {
-      clientId: "YOUR_CLIENT_ID", // Application (client) ID from Azure
-      authority: "https://login.microsoftonline.com/YOUR_TENANT_ID", // Directory (tenant) ID
-      redirectUri: "http://localhost:3000", // URL to redirect to after login
-    },
-    cache: {
-      cacheLocation: "sessionStorage", // This configures where your cache will be stored
-      storeAuthStateInCookie: true, // Set this to true if you are having issues on IE11 or Edge
-    },
-    system: {
-      loggerOptions: {
-        loggerCallback: (level: LogLevel, message: string, containsPii: boolean) => {
-          if (containsPii) {
-            return;
-          }
-          switch (level) {
-            case LogLevel.Error:
-              console.error(message);
-              return;
-            case LogLevel.Info:
-              console.info(message);
-              return;
-            case LogLevel.Verbose:
-              console.debug(message);
-              return;
-            case LogLevel.Warning:
-              console.warn(message);
-              return;
-            default:
-              return;
-          }
-        },
-      },
-    },
-  };
-
-//////////////////////////////////////////////////////
-
-export const loginRequest = authSetup.loginRequest;
 export const tokenRequest = authSetup.tokenRequest;
 
 // Build an absolute redirect URI using the current window's location and the relative redirect URI from auth setup
@@ -315,20 +320,121 @@ export const isLoggedIn = (client: IPublicClientApplication | undefined): boolea
     return client?.getActiveAccount() != null || appServicesToken != null;
 };
 
-// Get an access token for use with the API server
-export const getToken = (client: IPublicClientApplication): Promise<string | undefined> => {
-    if (appServicesToken) {
-        return Promise.resolve(appServicesToken.access_token);
-    }
+/////////////////////////  ver: commented out the original code and modified the code //////////////////////
+// // Get an access token for use with the API server
+// export const getToken = (client: IPublicClientApplication): Promise<string | undefined> => {
+//     if (appServicesToken) {
+//         return Promise.resolve(appServicesToken.access_token);
+//     }
 
-    return client
-        .acquireTokenSilent({
-            ...tokenRequest,
-            redirectUri: getRedirectUri()
-        })
-        .then(r => r.accessToken)
-        .catch(error => {
-            console.log(error);
-            return undefined;
+//     return client
+//         .acquireTokenSilent({
+//             ...tokenRequest,
+//             redirectUri: getRedirectUri()
+//         })
+//         .then(r => r.accessToken)
+//         .catch(error => {
+//             console.log(error);
+//             return undefined;
+//         });
+// };
+
+// //ver: commenting out modified version and replacing with a newer verion
+// // Get an access token for use with the API server
+// export const getToken = async (client: IPublicClientApplication | null = null): Promise<string | undefined> => {
+//   if (appServicesToken) {
+//       return Promise.resolve(appServicesToken.access_token);
+//   }
+
+//   // Use the MSAL instance to acquire a token silently if no app services token is available
+//   if (client || msalInstance) {
+//       try {
+//           const tokenResponse = await (client || msalInstance).acquireTokenSilent({
+//               scopes: [...tokenRequest.scopes],
+//               redirectUri: getRedirectUri(),
+//           });
+//           return tokenResponse.accessToken;
+//       } catch (error) {
+//           console.log("Silent token acquisition failed: ", error);
+//           return undefined;
+//       }
+//   }
+
+//   return undefined;
+// };
+
+// Get an access token for use with the API server
+export const getToken = async (client: IPublicClientApplication | null = null): Promise<string | undefined> => {
+  if (appServicesToken) {
+    // Return app services token if available
+    return Promise.resolve(appServicesToken.access_token);
+  }
+
+  // Ensure the client or msalInstance is available for token acquisition
+  const authClient = client || msalInstance;
+  if (!authClient) {
+    console.error("MSAL client is not available.");
+    return undefined;
+  }
+
+  try {
+    // Try to acquire token silently
+    const tokenResponse = await authClient.acquireTokenSilent({
+      scopes: [...tokenRequest.scopes], // Ensure you're requesting correct scopes
+      redirectUri: getRedirectUri(), // Ensure redirect URI is correctly set
+    });
+    // If token is acquired, return it
+    console.log("Token acquired silently:", tokenResponse.accessToken);    
+    // If token is acquired, return it
+    return tokenResponse.accessToken;
+  } catch (error) {
+    // Log the error to check why silent token acquisition failed
+    console.log("Silent token acquisition failed: ", error);
+
+    // If silent acquisition fails, try interactive login as a fallback
+    if (error instanceof InteractionRequiredAuthError) {
+      // Log that we need user interaction
+      // via full page redirect
+      console.log("Interaction required, attempting acquireTokenRedirect");
+
+      // // version of try-catch for popup window (mtd 1)
+      // console.log("Interaction required, attempting acquireTokenPopup");
+
+      // try {
+      //   // Try to acquire token via a popup window (or use acquireTokenRedirect for redirection)
+      //   const tokenResponse = await authClient.acquireTokenPopup({
+      //     scopes: [...tokenRequest.scopes], // Request the necessary scopes
+      //     redirectUri: getRedirectUri(),
+      //   });
+      //   // Log and return the interactively acquired token
+      //   console.log("Token acquired interactively:", tokenResponse.accessToken);
+      //   // If token is acquired, return it
+      //   return tokenResponse.accessToken;
+      // } catch (popupError) {
+      //   // Log if popup acquisition fails
+      //   console.error("Token acquisition via popup failed: ", popupError);
+      // }
+
+      // version of try-catch for full page redirect (mtd 2)
+      try {
+        await authClient.acquireTokenRedirect({
+            scopes: [...tokenRequest.scopes],
+            redirectUri: getRedirectUri(),
         });
+        // The redirection will happen, and this code will not execute further until the user is authenticated.
+    } catch (redirectError) {
+        console.error("Token acquisition via redirect failed: ", redirectError);
+    }      
+
+    } else {
+      // Handle any other errors that might occur during silent token acquisition
+      console.error("Non-interactive error: ", error);
+    }
+  }
+
+  // If all attempts fail, return undefined
+  return undefined;
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////

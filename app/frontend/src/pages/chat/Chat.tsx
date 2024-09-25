@@ -6,9 +6,15 @@ import ChatLogo from "../../pages/Logos/KaivaLogo.png"; // Replace with the actu
 import AdaptiveCardRenderer from "../../components/AdaptiveCardRenderer/AdaptiveCardRenderer";
 import ACR2 from "../../components/AdaptiveCardRenderer/ACR2";
 
+//ver 12 Sep: inlcuded import of file for the WelcomeAdaptiveCardRenderer
+import WACR from "../../components/AdaptiveCardRenderer/WelcomeAdaptiveCardRenderer"; // Ensure correct import
 
 
 import styles from "./Chat.module.css";
+
+// ver 09 Sept 2024: added in the import from msal-browser
+import { InteractionRequiredAuthError } from "@azure/msal-browser";
+/////////////////////////////////////////////////////////////////
 
 import {
     chatApi,
@@ -67,6 +73,229 @@ const Chat = () => {
     const [showGPT4VOptions, setShowGPT4VOptions] = useState<boolean>(false);
     const [showSemanticRankerOption, setShowSemanticRankerOption] = useState<boolean>(false);
     const [showVectorOption, setShowVectorOption] = useState<boolean>(false);
+
+    //////////////////////////////////////////////////////////////////
+    //ver 09 Sept: add state for storing username and ref to card container
+    const { instance, accounts } = useMsal(); //extracts the instance and accounts properties returned from the useMsal hook. instance: msal instance that provides methods to login logout and get tokens for authenticated user. accounts: an array containing the detai;s of all active user accounts, if there is a logged in user their acct info will be avail in this array
+    const [username, setUsername] = useState<string | null>(null); //initialise state var 'username' and function to update the username var 'setUsername'. datatype of state var 'username' is declared to be either string or null value. initial state is set as null.
+    const [email, setEmail] = useState<string | null>(null); //23 Sept: Added in for user's email
+    // const cardContainerRef = useRef<HTMLDivElement>(null); 
+   
+    /////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //ver 12 Sept: Inserted code for Msal here
+    
+    // //ver: added this to ensure pop up close automatically aft successful authentication - HANDLE REDIRECT PROMISE
+    // useEffect(() => {
+    //     // Handle the authentication response
+    //     instance.handleRedirectPromise()
+    //         .then((response) => {
+    //             if (response && response.account) {
+    //                 setUsername(response.account.name || null);
+    //             } else if (accounts.length > 0) {
+    //                 setUsername(accounts[0].name || null);
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error handling redirect promise:", error);
+    //         });
+    // }, [instance, accounts]);
+    
+
+    // Implement silent authentication
+    const attemptSilentAuth = async () => {
+        if (accounts.length > 0) {
+            try {
+                const account = accounts[0];
+                const tokenResponse = await instance.acquireTokenSilent({
+                    scopes: ["User.Read", "email"], // 23 Sept: added in email scope
+                    account: account // Use the logged-in account
+                });
+                setUsername(account.name || null); // Successfully authenticated silently
+
+                const email = account.idTokenClaims?.email as string | undefined; // Set email from idTokenClaims and explicitly cast as string
+                setEmail(email || null); // Set email to state
+                // setEmail(account.idTokenClaims?.email as string || null); // Set email from idTokenClaims and explicitly cast as string
+
+                //add in this line for checking
+                console.log(account.idTokenClaims);
+
+            } catch (error) {
+                if (error instanceof InteractionRequiredAuthError) {
+                    // If silent auth fails, prompt the user to log in interactively
+                    handleLogin(); // commented out since mtd 1 not used
+                // // If silent auth fails, redirect the user to log in interactively
+                // try {
+                //     await instance.loginRedirect({
+                //         scopes: ["User.Read"] // Add any additional scopes you need
+                //     });
+                // } catch (loginError) {
+                //     console.error("Login redirect failed: ", loginError);
+                // }
+                } else {
+                    console.error("Silent authentication failed", error);
+                }
+            }
+        }
+    };
+    
+    //// Method 1: displaying a login button when the user is not authenticated:
+    // Interactive login - as fallback if silent authentication fails
+    const handleLogin = async () => {
+        try {
+            // // Use loginRedirect instead of loginPopup
+            // await instance.loginRedirect({
+            //Commented out bec not usng pop up
+            const loginResponse = await instance.loginPopup({
+                scopes: ["User.Read", "email"] // 23 Sept: added in email scope
+            });
+            setUsername(loginResponse.account?.name || null);
+            console.log("Username: ", loginResponse.account?.name || null);  // Log the username after login
+            setEmail(loginResponse.account?.idTokenClaims?.email as string || null); // extract email and Cast email to string
+            console.log("Email: ", loginResponse.account?.idTokenClaims?.email || null); 
+
+            //added this line for checking
+            console.log(loginResponse.idTokenClaims);
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    };
+
+    // // hide the logout button and fucntion 
+    // const handleLogout = () => {
+    //     instance.logoutPopup();
+    //     setUsername(null);
+    // };
+
+    // Check if user is already logged in
+    useEffect(() => {
+        if (accounts.length > 0) {
+            setUsername(accounts[0].name || null); //set username if user is already autenticated
+            // console.log("Username: ", accounts[0].name || null);  // Log the username
+            console.log("Username: ", accounts[0].name);
+            
+            // 23 Sept: updated to also include email
+            setEmail(accounts[0].idTokenClaims?.email as string || null); // Set email if available
+            console.log("Email: ", accounts[0].idTokenClaims?.email);
+
+        } else {
+            attemptSilentAuth(); // Attempt silent authentication only if no accounts are found
+        }
+    }, [accounts]);
+
+    // // version 2 of login button
+    // useEffect(() => {
+    //     // Handle authentication response from redirect
+    //     instance.handleRedirectPromise()
+    //         .then((response) => {
+    //             if (response && response.account) {
+    //                 setUsername(response.account.name || null);
+    //             } else if (accounts.length > 0) {
+    //                 setUsername(accounts[0].name || null);
+    //             } else {
+    //                 // If no accounts are present, initiate silent auth
+    //                 attemptSilentAuth();
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error handling redirect promise: ", error);
+    //         });
+    // }, [instance, accounts]);
+    
+    // // Modify attemptSilentAuth to remove redundant loginRedirect call
+    // const attemptSilentAuth = async () => {
+    //     if (accounts.length > 0) {
+    //         try {
+    //             const account = accounts[0];
+    //             const tokenResponse = await instance.acquireTokenSilent({
+    //                 scopes: ["User.Read"],
+    //                 account: account // Use the logged-in account
+    //             });
+    //             setUsername(account.name || null); // Successfully authenticated silently
+    //         } catch (error) {
+    //             if (error instanceof InteractionRequiredAuthError) {
+    //                 console.error("Silent authentication failed, interaction required", error);
+    //             } else {
+    //                 console.error("Silent authentication failed", error);
+    //             }
+    //         }
+    //     }
+    // };
+
+
+    // //// Method 2: trigger full page redirect for the user to login when the user is not authenticated
+    // // Interactive login - as fallback if silent auth fails
+    // const handleLogin = async () => {
+    //     try {
+    //         await instance.loginRedirect({ //use login redirect instead of login popup for full page redirect authentication
+    //             scopes: ["User.Read"]
+    //         });
+    //     } catch (error) {
+    //         console.error("Login failed:", error);
+    //     }
+    // };
+
+    // // Check if the user is already logged in
+    // useEffect(() => {
+    //     if (accounts.length > 0) {
+    //         setUsername(accounts[0].name || null); // Set username if user is already authenticated
+    //         console.log("Username: ", accounts[0].name); 
+    //     } else {
+    //         // If no accounts found, directly redirect to login
+    //         handleLogin(); // This will redirect the user to the login page
+    //     }
+    // }, [accounts]);
+
+    // // version 2 of redirect
+    // useEffect(() => {
+    //     instance.handleRedirectPromise()
+    //         .then(response => {
+    //             if (response) {
+    //                 setUsername(response.account?.name || null);
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error("Redirect handling failed:", error);
+    //         });
+    // }, []);
+
+    // useEffect(() => {
+    //     if (accounts.length > 0) {
+    //         setUsername(accounts[0].name || null); // Set username if user is already authenticated
+    //         console.log("Username: ", accounts[0].name); 
+    //     } else {
+    //         // If no accounts found, directly redirect to login
+    //         instance.loginRedirect({
+    //             scopes: ["User.Read"] // Add any additional scopes you need
+    //         });
+    //     }
+    // }, [accounts]);
+
+    // // version 3 of redirect
+    // useEffect(() => {
+    //     // Handle authentication response from redirect
+    //     instance.handleRedirectPromise()
+    //         .then((response) => {
+    //             if (response && response.account) {
+    //                 setUsername(response.account.name || null);
+    //             } else if (accounts.length > 0) {
+    //                 setUsername(accounts[0].name || null);
+    //             } else {
+    //                 // If no accounts are present and no response from redirect, initiate loginRedirect
+    //                 instance.loginRedirect({
+    //                     scopes: ["User.Read"] // Add any additional scopes you need
+    //                 });
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error handling redirect promise: ", error);
+    //         });
+    // }, [instance, accounts]); // Ensure instance and accounts are included in dependencies
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
 
     const getConfig = async () => {
         const token = client ? await getToken(client) : undefined;
@@ -129,14 +358,16 @@ const Chat = () => {
         return fullResponse;
     };
 
-    const client = useLogin ? useMsal().instance : undefined;
+    // // ver 12Sept: commented out this line as it will be replaced for consistency so that useMsal().instance wont need to be called again
+    // const client = useLogin ? useMsal().instance : undefined;
+    const client = useLogin ? instance : undefined; //technically instance and useMsal().instance is the same
     
     // ----------------------------------- edited code ------------------------------------------
     // adaptive card
     const [showCard, setShowCard] = useState<boolean>(false);
 
     // keywords
-    const keywords = ["adaptive", "workflow", "card", "uipath"];
+    const keywords = ["adaptive", "workflow", "card", "uipath"]; //ver: perhaps can add 'adaptive card'
     const containsKeywords = (message: string, keywords: string[]): boolean => {
         const messageLower = message.toLowerCase();
         return keywords.some(keyword => messageLower.includes(keyword));
@@ -334,6 +565,20 @@ const Chat = () => {
                             <div style={{ fontSize: "8px", fontWeight: "bold", textAlign: "center", color: "#555" }}>Powered by GPT 4.0</div>
                             <h2 className={styles.chatEmptyStateSubtitle}>Ask KAIVA about IT and Compliance Policies</h2>
                             <ExampleList onExampleClicked={onExampleClicked} useGPT4V={useGPT4V} />
+
+                            {/* ver 12Sep: --- Modification: Added login button when user is not logged in --- */}
+                            {accounts.length === 0 ? (
+                                <button onClick={handleLogin}>Login</button>  // Added login button for when there are no active user accounts
+                                // <p>Redirecting to login...</p> // Display a message indicating redirection to login
+
+                            ) : (
+                                // --- Modification: Added a welcome message and AdaptiveCardRenderer if the user is logged in ---
+                                <div>
+                                    {/* <h2>Welcome, {username}</h2>  // Displays the username of the logged-in user */}
+                                    <WACR username={username} email={email}/> {/* Renders the Welcome Adaptive Card with user information */}
+                                </div>
+                            )}
+                            
                         </div>
                     ) : (
                         <div className={styles.chatMessageStream}>
