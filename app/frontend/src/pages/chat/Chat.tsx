@@ -40,6 +40,10 @@ import { useMsal } from "@azure/msal-react";
 import { TokenClaimsDisplay } from "../../components/TokenClaimsDisplay";
 import { GPT4VSettings } from "../../components/GPT4VSettings";
 
+// 26 Sept: Added additional for loginredirect
+import { MsalProvider } from "@azure/msal-react";
+import { msalInstance } from "../../authConfig"; // Your MSAL config
+
 const Chat = () => {
     const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
     const [promptTemplate, setPromptTemplate] = useState<string>("");
@@ -80,218 +84,236 @@ const Chat = () => {
     const [username, setUsername] = useState<string | null>(null); //initialise state var 'username' and function to update the username var 'setUsername'. datatype of state var 'username' is declared to be either string or null value. initial state is set as null.
     const [email, setEmail] = useState<string | null>(null); //23 Sept: Added in for user's email
     // const cardContainerRef = useRef<HTMLDivElement>(null); 
-   
+
+    console.log('MSAL instance:', instance); 
     /////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////
     //ver 12 Sept: Inserted code for Msal here
     
-    // //ver: added this to ensure pop up close automatically aft successful authentication - HANDLE REDIRECT PROMISE
-    // useEffect(() => {
-    //     // Handle the authentication response
-    //     instance.handleRedirectPromise()
-    //         .then((response) => {
-    //             if (response && response.account) {
-    //                 setUsername(response.account.name || null);
-    //             } else if (accounts.length > 0) {
-    //                 setUsername(accounts[0].name || null);
-    //             }
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error handling redirect promise:", error);
-    //         });
-    // }, [instance, accounts]);
+
     
 
-    // Implement silent authentication
-    const attemptSilentAuth = async () => {
-        if (accounts.length > 0) {
-            try {
-                const account = accounts[0];
-                const tokenResponse = await instance.acquireTokenSilent({
-                    scopes: ["User.Read", "email"], // 23 Sept: added in email scope
-                    account: account // Use the logged-in account
-                });
-                setUsername(account.name || null); // Successfully authenticated silently
+//     /////// Code version that will present a login button if the user is not authenticated and have a popup login page /////////
+//     // start of code
+//     // Implement silent authentication
+//     const attemptSilentAuth = async () => {
+//         if (accounts.length > 0) {
+//             try {
+//                 const account = accounts[0];
+//                 const tokenResponse = await instance.acquireTokenSilent({
+//                     scopes: ["User.Read", "email"], // 23 Sept: added in email scope
+//                     account: account // Use the logged-in account
+//                 });
+//                 setUsername(account.name || null); // Successfully authenticated silently
 
-                const email = account.idTokenClaims?.email as string | undefined; // Set email from idTokenClaims and explicitly cast as string
-                setEmail(email || null); // Set email to state
-                // setEmail(account.idTokenClaims?.email as string || null); // Set email from idTokenClaims and explicitly cast as string
+//                 const email = account.idTokenClaims?.email as string | undefined; // Set email from idTokenClaims and explicitly cast as string
+//                 setEmail(email || null); // Set email to state
+//                 // setEmail(account.idTokenClaims?.email as string || null); // Set email from idTokenClaims and explicitly cast as string
 
-                //add in this line for checking
-                console.log(account.idTokenClaims);
+//                 //add in this line for checking
+//                 console.log(account.idTokenClaims);
 
-            } catch (error) {
-                if (error instanceof InteractionRequiredAuthError) {
-                    // If silent auth fails, prompt the user to log in interactively
-                    handleLogin(); // commented out since mtd 1 not used
-                // // If silent auth fails, redirect the user to log in interactively
-                // try {
-                //     await instance.loginRedirect({
-                //         scopes: ["User.Read"] // Add any additional scopes you need
-                //     });
-                // } catch (loginError) {
-                //     console.error("Login redirect failed: ", loginError);
-                // }
-                } else {
-                    console.error("Silent authentication failed", error);
-                }
+//             } catch (error) {
+//                 if (error instanceof InteractionRequiredAuthError) {
+//                     // If silent auth fails, prompt the user to log in interactively
+//                     handleLogin(); // commented out since mtd 1 not used
+//                 // // If silent auth fails, redirect the user to log in interactively
+//                 // try {
+//                 //     await instance.loginRedirect({
+//                 //         scopes: ["User.Read"] // Add any additional scopes you need
+//                 //     });
+//                 // } catch (loginError) {
+//                 //     console.error("Login redirect failed: ", loginError);
+//                 // }
+//                 } else {
+//                     console.error("Silent authentication failed", error);
+//                 }
+//             }
+//         }
+//     };
+    
+//     //// Method 1: displaying a login button when the user is not authenticated:
+//     // Interactive login - as fallback if silent authentication fails
+//     const handleLogin = async () => {
+//         try {
+//             // // Use loginRedirect instead of loginPopup
+//             // await instance.loginRedirect({
+//             //Commented out bec not usng pop up
+//             const loginResponse = await instance.loginPopup({
+//                 scopes: ["User.Read", "email"] // 23 Sept: added in email scope
+//             });
+//             setUsername(loginResponse.account?.name || null);
+//             console.log("Username: ", loginResponse.account?.name || null);  // Log the username after login
+//             setEmail(loginResponse.account?.idTokenClaims?.email as string || null); // extract email and Cast email to string
+//             console.log("Email: ", loginResponse.account?.idTokenClaims?.email || null); 
+
+//             //added this line for checking
+//             console.log(loginResponse.idTokenClaims);
+//         } catch (error) {
+//             console.error("Login failed:", error);
+//         }
+//     };
+
+//     // // hide the logout button and fucntion 
+//     // const handleLogout = () => {
+//     //     instance.logoutPopup();
+//     //     setUsername(null);
+//     // };
+
+//     // Check if user is already logged in
+//     useEffect(() => {
+//         if (accounts.length > 0) {
+//             setUsername(accounts[0].name || null); //set username if user is already autenticated
+//             // console.log("Username: ", accounts[0].name || null);  // Log the username
+//             console.log("Username: ", accounts[0].name);
+            
+//             // 23 Sept: updated to also include email
+//             setEmail(accounts[0].idTokenClaims?.email as string || null); // Set email if available
+//             console.log("Email: ", accounts[0].idTokenClaims?.email);
+
+//         } else {
+//             attemptSilentAuth(); // Attempt silent authentication only if no accounts are found
+//         }
+//     }, [accounts]);
+// ///// end of code for login via login button ////
+
+
+
+
+//// Code version with full page redirect ///////
+
+
+// // Implement silent authentication
+// const attemptSilentAuth = async () => {
+//     if (accounts.length > 0) {
+//         try {
+//             const account = accounts[0];
+//             const tokenResponse = await instance.acquireTokenSilent({
+//                 scopes: ["User.Read", "email"], // Added email scope
+//                 account: account // Use the logged-in account
+//             });
+//             setUsername(account.name || null); // Successfully authenticated silently
+
+//             const email = account.idTokenClaims?.email as string | undefined; // Set email from idTokenClaims and explicitly cast as string
+//             setEmail(email || null); // Set email to state
+
+    
+//             // Add log for checking claims
+//             console.log(account.idTokenClaims);
+//         } catch (error) {
+//             if (error instanceof InteractionRequiredAuthError) {
+//                 // If silent auth fails, redirect the user to log in interactively
+//                 instance.loginRedirect({
+//                     scopes: ["User.Read", "email"] // Use loginRedirect instead of loginPopup
+//                 });
+//             } else {
+//                 console.error("Silent authentication failed", error);
+//             }
+//         }
+//     }
+// };
+
+// Implement silent authentication - latest
+const attemptSilentAuth = async (): Promise<boolean> => {  // Ensure the return type is a boolean
+    if (accounts.length > 0) {
+        try {
+            const account = accounts[0];
+            const tokenResponse = await instance.acquireTokenSilent({
+                scopes: ["User.Read", "email"], // Added email scope
+                account: account // Use the logged-in account
+            });
+            
+            // setUsername(account.name || null); // Successfully authenticated silently
+
+            // const email = account.idTokenClaims?.email as string | undefined; // Set email from idTokenClaims and explicitly cast as string
+            // setEmail(email || null); // Set email to state
+
+            // Only update state for username and email if username or email are not already set
+            if (!username) {
+                setUsername(account.name || null);
+            }
+
+            const emailFromToken = account.idTokenClaims?.email as string | undefined;
+            if (!email) {
+                setEmail(emailFromToken || null);
+            }
+
+
+            // Add log for checking claims
+            console.log(account.idTokenClaims);
+            return true; // Silent auth successful, return true
+        } catch (error) {
+            if (error instanceof InteractionRequiredAuthError) {
+                console.log("Silent auth failed, interaction required");
+                return false; // Silent auth failed, need to redirect
+            } else {
+                console.error("Silent authentication failed", error);
+                return false; // Other errors
             }
         }
-    };
-    
-    //// Method 1: displaying a login button when the user is not authenticated:
-    // Interactive login - as fallback if silent authentication fails
-    const handleLogin = async () => {
+    } else {
+        return false; // No accounts found, need to login
+    }
+};
+
+
+
+
+// // Declare authHandled state to prevent double execution of the auth flow
+// const [authHandled, setAuthHandled] = useState(false);
+
+// Declare authHandledRef to prevent double execution of the auth flow
+// use useRef instead of State - state change triggers a re-render
+const authHandledRef = useRef(false);
+
+
+// run useEffect hook which initialises msal to check if users are alr logged in and then calls the attempt silent authentication async function
+useEffect(() => {
+    if (!instance || authHandledRef.current) { //replaced authHandled
+        // Don't run if MSAL instance is not ready or if auth has already been handled
+        return;
+    }
+
+    // Add logging to check the accounts array
+    console.log("Accounts:", accounts);
+
+    const initAuth = async () => {
         try {
-            // // Use loginRedirect instead of loginPopup
-            // await instance.loginRedirect({
-            //Commented out bec not usng pop up
-            const loginResponse = await instance.loginPopup({
-                scopes: ["User.Read", "email"] // 23 Sept: added in email scope
-            });
-            setUsername(loginResponse.account?.name || null);
-            console.log("Username: ", loginResponse.account?.name || null);  // Log the username after login
-            setEmail(loginResponse.account?.idTokenClaims?.email as string || null); // extract email and Cast email to string
-            console.log("Email: ", loginResponse.account?.idTokenClaims?.email || null); 
+            console.log("Initializing MSAL...");
 
-            //added this line for checking
-            console.log(loginResponse.idTokenClaims);
+            // Call and await MSAL's initialize() method if necessary
+            await instance.initialize();
+
+            // Await handleRedirectPromise to ensure it completes before proceeding
+            const redirectResponse = await instance.handleRedirectPromise(); // Wait for MSAL instance to handle redirects
+            console.log("Redirect response:", redirectResponse);
+
+            // Attempt silent authentication first
+            const isAuthenticated = await attemptSilentAuth();
+
+            // If user is not authenticated, do a full page redirect to login
+            if (!isAuthenticated) {
+                console.log("Redirecting to login as silent authentication failed or user not logged in");
+                // If silent authentication fails or no accounts, proceed with login redirect
+                await instance.loginRedirect({
+                    scopes: ["User.Read", "email"]
+                });
+            }
+
+            // // Set authHandled to true to prevent re-running the effect
+            // setAuthHandled(true);
+            authHandledRef.current = true;  // Ensure that this is called only once
         } catch (error) {
-            console.error("Login failed:", error);
+            console.error("Error handling redirect promise:", error);
         }
     };
 
-    // // hide the logout button and fucntion 
-    // const handleLogout = () => {
-    //     instance.logoutPopup();
-    //     setUsername(null);
-    // };
+    initAuth();
 
-    // Check if user is already logged in
-    useEffect(() => {
-        if (accounts.length > 0) {
-            setUsername(accounts[0].name || null); //set username if user is already autenticated
-            // console.log("Username: ", accounts[0].name || null);  // Log the username
-            console.log("Username: ", accounts[0].name);
-            
-            // 23 Sept: updated to also include email
-            setEmail(accounts[0].idTokenClaims?.email as string || null); // Set email if available
-            console.log("Email: ", accounts[0].idTokenClaims?.email);
-
-        } else {
-            attemptSilentAuth(); // Attempt silent authentication only if no accounts are found
-        }
-    }, [accounts]);
-
-    // // version 2 of login button
-    // useEffect(() => {
-    //     // Handle authentication response from redirect
-    //     instance.handleRedirectPromise()
-    //         .then((response) => {
-    //             if (response && response.account) {
-    //                 setUsername(response.account.name || null);
-    //             } else if (accounts.length > 0) {
-    //                 setUsername(accounts[0].name || null);
-    //             } else {
-    //                 // If no accounts are present, initiate silent auth
-    //                 attemptSilentAuth();
-    //             }
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error handling redirect promise: ", error);
-    //         });
-    // }, [instance, accounts]);
-    
-    // // Modify attemptSilentAuth to remove redundant loginRedirect call
-    // const attemptSilentAuth = async () => {
-    //     if (accounts.length > 0) {
-    //         try {
-    //             const account = accounts[0];
-    //             const tokenResponse = await instance.acquireTokenSilent({
-    //                 scopes: ["User.Read"],
-    //                 account: account // Use the logged-in account
-    //             });
-    //             setUsername(account.name || null); // Successfully authenticated silently
-    //         } catch (error) {
-    //             if (error instanceof InteractionRequiredAuthError) {
-    //                 console.error("Silent authentication failed, interaction required", error);
-    //             } else {
-    //                 console.error("Silent authentication failed", error);
-    //             }
-    //         }
-    //     }
-    // };
+}, [instance]); // removed accounts as dependency to avoid rerun the effect when accounts changes //remove authHandled bec replaced with authHandledRef
 
 
-    // //// Method 2: trigger full page redirect for the user to login when the user is not authenticated
-    // // Interactive login - as fallback if silent auth fails
-    // const handleLogin = async () => {
-    //     try {
-    //         await instance.loginRedirect({ //use login redirect instead of login popup for full page redirect authentication
-    //             scopes: ["User.Read"]
-    //         });
-    //     } catch (error) {
-    //         console.error("Login failed:", error);
-    //     }
-    // };
-
-    // // Check if the user is already logged in
-    // useEffect(() => {
-    //     if (accounts.length > 0) {
-    //         setUsername(accounts[0].name || null); // Set username if user is already authenticated
-    //         console.log("Username: ", accounts[0].name); 
-    //     } else {
-    //         // If no accounts found, directly redirect to login
-    //         handleLogin(); // This will redirect the user to the login page
-    //     }
-    // }, [accounts]);
-
-    // // version 2 of redirect
-    // useEffect(() => {
-    //     instance.handleRedirectPromise()
-    //         .then(response => {
-    //             if (response) {
-    //                 setUsername(response.account?.name || null);
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error("Redirect handling failed:", error);
-    //         });
-    // }, []);
-
-    // useEffect(() => {
-    //     if (accounts.length > 0) {
-    //         setUsername(accounts[0].name || null); // Set username if user is already authenticated
-    //         console.log("Username: ", accounts[0].name); 
-    //     } else {
-    //         // If no accounts found, directly redirect to login
-    //         instance.loginRedirect({
-    //             scopes: ["User.Read"] // Add any additional scopes you need
-    //         });
-    //     }
-    // }, [accounts]);
-
-    // // version 3 of redirect
-    // useEffect(() => {
-    //     // Handle authentication response from redirect
-    //     instance.handleRedirectPromise()
-    //         .then((response) => {
-    //             if (response && response.account) {
-    //                 setUsername(response.account.name || null);
-    //             } else if (accounts.length > 0) {
-    //                 setUsername(accounts[0].name || null);
-    //             } else {
-    //                 // If no accounts are present and no response from redirect, initiate loginRedirect
-    //                 instance.loginRedirect({
-    //                     scopes: ["User.Read"] // Add any additional scopes you need
-    //                 });
-    //             }
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error handling redirect promise: ", error);
-    //         });
-    // }, [instance, accounts]); // Ensure instance and accounts are included in dependencies
 
 
 
@@ -566,18 +588,12 @@ const Chat = () => {
                             <h2 className={styles.chatEmptyStateSubtitle}>Ask KAIVA about IT and Compliance Policies</h2>
                             <ExampleList onExampleClicked={onExampleClicked} useGPT4V={useGPT4V} />
 
-                            {/* ver 12Sep: --- Modification: Added login button when user is not logged in --- */}
-                            {accounts.length === 0 ? (
-                                <button onClick={handleLogin}>Login</button>  // Added login button for when there are no active user accounts
-                                // <p>Redirecting to login...</p> // Display a message indicating redirection to login
-
-                            ) : (
-                                // --- Modification: Added a welcome message and AdaptiveCardRenderer if the user is logged in ---
+                            {/* updated the below condition {accounts.length === 0 ?  to {username && email ? */}
+                            {username && email ? (
                                 <div>
-                                    {/* <h2>Welcome, {username}</h2>  // Displays the username of the logged-in user */}
                                     <WACR username={username} email={email}/> {/* Renders the Welcome Adaptive Card with user information */}
                                 </div>
-                            )}
+                            ): null}
                             
                         </div>
                     ) : (
@@ -790,5 +806,252 @@ const Chat = () => {
         </div>
     );
 };
+
+
+// Return block for code version with login button
+// return (
+//     <div className={styles.container}>
+//         <div className={styles.commandsContainer}>
+//             <ClearChatButton className={styles.commandButton} onClick={clearChat} disabled={!lastQuestionRef.current || isLoading} />
+//             <SettingsButton className={styles.commandButton} onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
+//         </div>
+//         <div className={styles.chatRoot}>
+//             <div className={styles.chatContainer}>
+//                 {!lastQuestionRef.current ? (
+//                     <div className={styles.chatEmptyState}>
+//                         {/* <SparkleFilled fontSize={"120px"} primaryFill={"rgba(115, 118, 225, 1)"} aria-hidden="true" aria-label="Chat logo" /> */}
+//                         <img src={ChatLogo} alt="I AM KAIVA" />
+//                         {/* <h1 className={styles.chatEmptyStateTitle}>Chat with KAIVA</h1> */}
+//                         <div style={{ fontSize: "8px", fontWeight: "bold", textAlign: "center", color: "#555" }}>Powered by GPT 4.0</div>
+//                         <h2 className={styles.chatEmptyStateSubtitle}>Ask KAIVA about IT and Compliance Policies</h2>
+//                         <ExampleList onExampleClicked={onExampleClicked} useGPT4V={useGPT4V} />
+
+//                         {/* ver 12Sep: --- Modification: Added login button when user is not logged in --- */}
+//                         {accounts.length === 0 ? (
+//                             <button onClick={handleLogin}>Login</button>  // Added login button for when there are no active user accounts
+//                             // <p>Redirecting to login...</p> // Display a message indicating redirection to login
+
+//                         ) : (
+//                             // --- Modification: Added a welcome message and AdaptiveCardRenderer if the user is logged in ---
+//                             <div>
+//                                 {/* <h2>Welcome, {username}</h2>  // Displays the username of the logged-in user */}
+//                                 <WACR username={username} email={email}/> {/* Renders the Welcome Adaptive Card with user information */}
+//                             </div>
+//                         )}
+                        
+//                     </div>
+//                 ) : (
+//                     <div className={styles.chatMessageStream}>
+//                         {isStreaming &&
+//                             streamedAnswers.map((streamedAnswer, index) => (
+//                                 <div key={index}>
+//                                     <UserChatMessage message={streamedAnswer[0]} />
+//                                     <div className={styles.chatMessageGpt}>
+//                                         <Answer
+//                                             isStreaming={true}
+//                                             key={index}
+//                                             answer={streamedAnswer[1]}
+//                                             isSelected={false}
+//                                             onCitationClicked={c => onShowCitation(c, index)}
+//                                             onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
+//                                             onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
+//                                             onFollowupQuestionClicked={q => makeApiRequest(q)}
+//                                             showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
+//                                         />
+//                                     </div>
+//                                 </div>
+//                             ))}
+//                         {!isStreaming &&
+//                             answers.map((answer, index) => (
+//                                 <div key={index}>
+//                                     <UserChatMessage message={answer[0]} />
+//                                     <div className={styles.chatMessageGpt}>
+//                                         {/* --------------------------- edited code ------------------------------------ */}
+//                                         {answer[1].choices[0].message.content === "show adaptive card" ? (
+//                                                 <AdaptiveCardRenderer /> // renders first adaptive card
+//                                             ) : answer[1].choices[0].message.content === "show adaptive card 2" ? (
+//                                                 <ACR2 /> // Renders the second adaptive card
+//                                             ) : (
+//                                             <Answer
+//                                                 isStreaming={false}
+//                                                 key={index}
+//                                                 answer={answer[1]}
+//                                                 isSelected={selectedAnswer === index && activeAnalysisPanelTab !== undefined}
+//                                                 onCitationClicked={c => onShowCitation(c, index)}
+//                                                 onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
+//                                                 onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
+//                                                 onFollowupQuestionClicked={q => makeApiRequest(q)}
+//                                                 showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
+//                                             />
+//                                         )}
+//                                     </div>
+//                                 </div>
+//                             ))}
+//                         {isLoading && (
+//                             <>
+//                                 <UserChatMessage message={lastQuestionRef.current} />
+//                                 <div className={styles.chatMessageGptMinWidth}>
+//                                     <AnswerLoading />
+//                                 </div>
+//                             </>
+//                         )}
+//                         {error ? (
+//                             <>
+//                                 <UserChatMessage message={lastQuestionRef.current} />
+//                                 <div className={styles.chatMessageGptMinWidth}>
+//                                     <AnswerError error={error.toString()} onRetry={() => makeApiRequest(lastQuestionRef.current)} />
+//                                 </div>
+//                             </>
+//                         ) : null}
+//                         <div ref={chatMessageStreamEnd} />
+//                     </div>
+//                 )}
+
+//                 <div className={styles.chatInput}>
+//                     <QuestionInput
+//                         clearOnSend
+//                         placeholder="Type a new question (e.g. what is the minimum password complexity requirement?)"
+//                         disabled={isLoading}
+//                         onSend={question => makeApiRequest(question)}
+//                     />
+//                 </div>
+//             </div>
+
+//             {answers.length > 0 && activeAnalysisPanelTab && (
+//                 <AnalysisPanel
+//                     className={styles.chatAnalysisPanel}
+//                     activeCitation={activeCitation}
+//                     onActiveTabChanged={x => onToggleTab(x, selectedAnswer)}
+//                     citationHeight="810px"
+//                     answer={answers[selectedAnswer][1]}
+//                     activeTab={activeAnalysisPanelTab}
+//                 />
+//             )}
+
+//             <Panel
+//                 headerText="Configure answer generation"
+//                 isOpen={isConfigPanelOpen}
+//                 isBlocking={false}
+//                 onDismiss={() => setIsConfigPanelOpen(false)}
+//                 closeButtonAriaLabel="Close"
+//                 onRenderFooterContent={() => <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>Close</DefaultButton>}
+//                 isFooterAtBottom={true}
+//             >
+//                 <TextField
+//                     className={styles.chatSettingsSeparator}
+//                     defaultValue={promptTemplate}
+//                     label="Override prompt template"
+//                     multiline
+//                     autoAdjustHeight
+//                     onChange={onPromptTemplateChange}
+//                 />
+
+//                 <Slider
+//                     className={styles.chatSettingsSeparator}
+//                     label="Temperature"
+//                     min={0}
+//                     max={1}
+//                     step={0.1}
+//                     defaultValue={temperature}
+//                     onChange={onTemperatureChange}
+//                     showValue
+//                     snapToStep
+//                 />
+
+//                 <SpinButton
+//                     className={styles.chatSettingsSeparator}
+//                     label="Retrieve this many search results:"
+//                     min={1}
+//                     max={50}
+//                     defaultValue={retrieveCount.toString()}
+//                     onChange={onRetrieveCountChange}
+//                 />
+//                 <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />
+
+//                 {showSemanticRankerOption && (
+//                     <Checkbox
+//                         className={styles.chatSettingsSeparator}
+//                         checked={useSemanticRanker}
+//                         label="Use semantic ranker for retrieval"
+//                         onChange={onUseSemanticRankerChange}
+//                     />
+//                 )}
+//                 <Checkbox
+//                     className={styles.chatSettingsSeparator}
+//                     checked={useSemanticCaptions}
+//                     label="Use query-contextual summaries instead of whole documents"
+//                     onChange={onUseSemanticCaptionsChange}
+//                     disabled={!useSemanticRanker}
+//                 />
+//                 <Checkbox
+//                     className={styles.chatSettingsSeparator}
+//                     checked={useSuggestFollowupQuestions}
+//                     label="Suggest follow-up questions"
+//                     onChange={onUseSuggestFollowupQuestionsChange}
+//                 />
+
+//                 {showGPT4VOptions && (
+//                     <GPT4VSettings
+//                         gpt4vInputs={gpt4vInput}
+//                         isUseGPT4V={useGPT4V}
+//                         updateUseGPT4V={useGPT4V => {
+//                             setUseGPT4V(useGPT4V);
+//                         }}
+//                         updateGPT4VInputs={inputs => setGPT4VInput(inputs)}
+//                     />
+//                 )}
+
+//                 {showVectorOption && (
+//                     <VectorSettings
+//                         showImageOptions={useGPT4V && showGPT4VOptions}
+//                         updateVectorFields={(options: VectorFieldOptions[]) => setVectorFieldList(options)}
+//                         updateRetrievalMode={(retrievalMode: RetrievalMode) => setRetrievalMode(retrievalMode)}
+//                     />
+//                 )}
+
+//                 {useLogin && (
+//                     <Checkbox
+//                         className={styles.chatSettingsSeparator}
+//                         checked={useOidSecurityFilter || requireAccessControl}
+//                         label="Use oid security filter"
+//                         disabled={!isLoggedIn(client) || requireAccessControl}
+//                         onChange={onUseOidSecurityFilterChange}
+//                     />
+//                 )}
+//                 {useLogin && (
+//                     <Checkbox
+//                         className={styles.chatSettingsSeparator}
+//                         checked={useGroupsSecurityFilter || requireAccessControl}
+//                         label="Use groups security filter"
+//                         disabled={!isLoggedIn(client) || requireAccessControl}
+//                         onChange={onUseGroupsSecurityFilterChange}
+//                     />
+//                 )}
+
+//                 <Checkbox
+//                     className={styles.chatSettingsSeparator}
+//                     checked={shouldStream}
+//                     label="Stream chat completion responses"
+//                     onChange={onShouldStreamChange}
+//                 />
+//                 {useLogin && <TokenClaimsDisplay />}
+//             </Panel>
+//         </div>
+//         <footer className={styles.footer}>
+//             <div className={styles.disclaimer}>
+//                 <h6>*KAIVA may display inaccurate info; always validate the resposne</h6>
+//             </div>
+//         </footer>
+
+//         <div className="chatInput">
+//             {/* Your existing chat input content goes here */}
+//             <div className="staticText"> GPT 4.0</div>
+//         </div>
+//     </div>
+// );
+// };
+
+
+
 
 export default Chat;
