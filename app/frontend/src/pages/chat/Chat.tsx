@@ -389,14 +389,16 @@ useEffect(() => {
     const [showCard, setShowCard] = useState<boolean>(false);
 
     // keywords
-    const keywords = ["adaptive", "workflow", "card", "uipath"]; //ver: perhaps can add 'adaptive card'
+    // const keywords = ["adaptive", "workflow", "card", "uipath"]; //ver: perhaps can add 'adaptive card'
+    const keywords = ["#adaptive", "#workflow", "#uipath", "#card", "#adaptive card"]; 
     const containsKeywords = (message: string, keywords: string[]): boolean => {
         const messageLower = message.toLowerCase();
         return keywords.some(keyword => messageLower.includes(keyword));
     };
 
     // keywords set 2 to trigger diff adaptive cards
-    const keywords2 = ["automation", "integration", "api", "bot"];
+    // const keywords2 = ["automation", "integration", "api", "bot"];
+    const keywords2 = ["#automation", "#integration", "#api", "#bot"];
     const containsKeywords2 = (message: string, keywords2: string[]): boolean => {
         const messageLower = message.toLowerCase();
         return keywords2.some(keyword => messageLower.includes(keyword));
