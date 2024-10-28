@@ -1,0 +1,41 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.3",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "Please select the system for the selected environment:",  
+            "wrap": true
+        },
+        {
+            "type": "Input.ChoiceSet",
+            "id": "system",
+            "style": "expanded",
+            "choices": [
+                { "title": "GUI", "value": "GUI" },
+                { "title": "Fiori", "value": "Fiori" },
+                { "title": "BW", "value": "BW" }
+            ],
+            "placeholder": "Select a system"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "Next",
+            "data": {
+                "action": "selectSystem",
+                "environment": ""  
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "Go back to Environment Selection", 
+            "data": {
+                "action": "goBack",
+                "goBackChoice": "environment"
+            }
+        }
+    ]
+}

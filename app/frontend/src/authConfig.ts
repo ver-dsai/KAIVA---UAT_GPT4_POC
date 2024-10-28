@@ -224,13 +224,13 @@ interface AuthSetup {
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: "a043858e-d00e-40e5-a491-d9f9a02e1aa2",  // Your Azure AD App Registration Client ID //currently using development KAIVA version's clientID
+    clientId: "a043858e-d00e-40e5-a491-d9f9a02e1aa2",  // Your Azure AD App Registration Client ID //currently using UAT development KAIVA version's clientID, to be updated for prod version
     authority: "https://login.microsoftonline.com/c1a5f3d0-0f2b-49a8-b7f8-baf494155ee7",  // Your Tenant ID or Authority
-    //comment out original logic for redirectURI - redirect back to the application
-    // // for local testing:
-    // redirectUri: 'http://localhost:50505/' //"https://app-backend-px5hwy56ocjy2.azurewebsites.net/" //"http://localhost:50505/"//"https://app-backend-px5hwy56ocjy2.azurewebsites.net/.auth/login/aad/callback" //callback hv error during deployemnt //updated to use the prod link //"http://127.0.0.1:50505/" //window.location.origin,  // Automatically handles local/prod URLs
-    //for UAT testing:
-    redirectUri: "https://app-backend-px5hwy56ocjy2.azurewebsites.net/"
+    //comment out original logic for redirectURI - redirect back to the application //to update redirect uri for prod version url
+    // for local testing:
+    redirectUri: 'http://localhost:50505/' //"https://app-backend-px5hwy56ocjy2.azurewebsites.net/" //"http://localhost:50505/"//"https://app-backend-px5hwy56ocjy2.azurewebsites.net/.auth/login/aad/callback" //callback hv error during deployemnt //updated to use the prod link //"http://127.0.0.1:50505/" //window.location.origin,  // Automatically handles local/prod URLs
+    // //for UAT testing:
+    // redirectUri: "https://app-backend-px5hwy56ocjy2.azurewebsites.net/"
 
 
     // // TO TEST OUT THE BELOW CODE FOR MAKING redirectURI DYNAMIC ONCE SETTLE registation of redirectURI in SPA instead of Web

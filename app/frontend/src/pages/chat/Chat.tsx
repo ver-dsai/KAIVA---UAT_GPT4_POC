@@ -44,6 +44,13 @@ import { GPT4VSettings } from "../../components/GPT4VSettings";
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "../../authConfig"; // Your MSAL config
 
+// 17 Oct: Imported files
+import SAPUnlockCardRenderer from "../../components/AdaptiveCardRenderer/SAPUnlockCardRenderer";// Assuming you have a component to render adaptive cards
+import envSelectionCardData from '../../components/AdaptiveCardRenderer/SAPUnlock_EnviroSelectionCard.json'; // Adaptive card for environment selection
+import systemSelectionCardData from '../../components/AdaptiveCardRenderer/SAPUnlock_SystemSelectionCard.json'; // Adaptive card for system selection
+import confirmationCardData from '../../components/AdaptiveCardRenderer/SAPUnlock_ConfirmationCard.json'; // Adaptive card for confirmation
+
+
 const Chat = () => {
     const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
     const [promptTemplate, setPromptTemplate] = useState<string>("");
@@ -88,10 +95,12 @@ const Chat = () => {
     console.log('MSAL instance:', instance); 
     /////////////////////////////////////////////////////////////
 
+    //ver 17 Oct: add state for controlling the SAP unlock card visibility
+    //New state for controlling the SAP unlock card visibility
+    const [showUnlockCard, setShowUnlockCard] = useState<boolean>(false);
+
     ///////////////////////////////////////////////////////////////////////////////
     //ver 12 Sept: Inserted code for Msal here
-    
-
     
 
 //     /////// Code version that will present a login button if the user is not authenticated and have a popup login page /////////
@@ -380,7 +389,7 @@ useEffect(() => {
         return fullResponse;
     };
 
-    // // ver 12Sept: commented out this line as it will be replaced for consistency so that useMsal().instance wont need to be called again
+    // // 12Sept: commented out this line as it will be replaced for consistency so that useMsal().instance wont need to be called again
     // const client = useLogin ? useMsal().instance : undefined;
     const client = useLogin ? instance : undefined; //technically instance and useMsal().instance is the same
     
@@ -404,6 +413,25 @@ useEffect(() => {
         return keywords2.some(keyword => messageLower.includes(keyword));
     };
     // ------------------------------------------------------------------------------------------
+
+    // -------------------------------------- Edited code for SAP CARD Unlock --------------------------------------------------
+    // ver 17Oct: Added in codes for unlock SAP card by user keywords <- this may be removed when the template is updated
+    const unlockKeywords = ["#unlock sap account", "#unlock account", "#sap unlock"];
+
+    // Function to check if the input contains SAP unlock keywords
+    const containsKeywords3 = (message: string, unlockKeywords: string[]): boolean => {
+        const messageLower = message.toLowerCase();
+        return unlockKeywords.some(keyword => messageLower.includes(keyword));
+    };
+
+    // // Function to handle submission of the SAP unlock card
+    // const handleUnlockCardSubmit = (data: any) => {
+    //     console.log("SAP unlock card submitted with data:", data);
+    //     // Process the submitted data (e.g., API call to unlock SAP account)
+    //     setShowUnlockCard(false); // Hide the unlock card after submission
+    // };
+
+    // -------------------------------------------------------------------------------------------------------------------------
 
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
@@ -431,7 +459,19 @@ useEffect(() => {
             setShowCard(false);
         }
         // ------------------------------------------------------------------------------------------
+        
+        //////////////////////////////////////////// Edit for SAP Card Unlock /////////////////////////////////////////////////////////////////
+        // ver: 18 Oct 
+        // Function to check if the input contains SAP unlock keywords
+        // Check if the message contains SAP unlock keywords using containsKeywords3
+        if (containsKeywords3(question, unlockKeywords)) {
+            setShowUnlockCard(true);
+            setIsLoading(false);
+            setAnswers([...answers, [question, { choices: [{ message: { content: "show SAP unlock card", role: "system" } }] } as ChatAppResponse]]);
+            return;
+        }
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         const token = client ? await getToken(client) : undefined;
 
@@ -629,6 +669,9 @@ useEffect(() => {
                                                     <AdaptiveCardRenderer /> // renders first adaptive card
                                                 ) : answer[1].choices[0].message.content === "show adaptive card 2" ? (
                                                     <ACR2 /> // Renders the second adaptive card
+                                                ) : answer[1].choices[0].message.content === "show SAP unlock card" ? (
+                                                    <SAPUnlockCardRenderer 
+                                                    email={email}/> // Renders the second adaptive card
                                                 ) : (
                                                 <Answer
                                                     isStreaming={false}
@@ -674,6 +717,7 @@ useEffect(() => {
                         />
                     </div>
                 </div>
+
 
                 {answers.length > 0 && activeAnalysisPanelTab && (
                     <AnalysisPanel

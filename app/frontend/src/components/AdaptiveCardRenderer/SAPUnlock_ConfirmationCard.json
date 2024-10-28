@@ -1,0 +1,65 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.3",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "Please confirm your selections:",
+        "wrap": true,
+        "weight": "Bolder",
+        "size": "Medium"
+      },
+      {
+        "type": "TextBlock",
+        "text": "Environment: ${environment}",
+        "wrap": true
+      },
+      {
+        "type": "TextBlock",
+        "text": "System: ${system}",
+        "wrap": true
+      },
+      {
+        "type": "TextBlock",
+        "text": "User Email: ${email}",
+        "wrap": true
+      },
+      {
+        "type": "TextBlock",
+        "text": "Would you like to submit your request?",
+        "wrap": true,
+        "weight": "Bolder",
+        "spacing": "large",
+        "separator": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "Action.Submit",
+        "title": "Submit",
+        "data": {
+          "action": "confirmSelections",
+          "environment": "${environment}",
+          "system": "${system}",
+          "email": "${email}"  
+        }
+      },
+      {
+        "type": "Action.Submit",
+        "title": "Go back to System Selection",
+        "data": {
+          "action": "goBack",
+          "goBackChoice": "system"
+        }
+      },
+      {
+        "type": "Action.Submit",
+        "title": "Go back to Environment Selection",
+        "data": {
+          "action": "goBack",
+          "goBackChoice": "environment"
+        }
+      }
+    ]
+  }
