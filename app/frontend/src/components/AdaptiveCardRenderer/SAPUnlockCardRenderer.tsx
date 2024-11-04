@@ -3,7 +3,8 @@ import * as AdaptiveCards from "adaptivecards";
 import envSelectionCardJson from "./SAPUnlock_EnviroSelectionCard.json";
 import systemSelectionCardJson from "./SAPUnlock_SystemSelectionCard.json";
 import confirmationCardJson from "./SAPUnlock_ConfirmationCard.json";
-import "./AdaptiveCardRenderer.css"; // Import the CSS file
+// import "./AdaptiveCardRenderer.css"; // Import the CSS file
+import "./AdaptiveCardRendererUnlock.css"; // Import the CSS file
 
 
 // Possible API responses:
@@ -26,12 +27,12 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
   
   interface SAPUnlockCardRendererProps { //interface alias - also giving name to an object, the interface object can be extendable
     email: string | null; // Receive email as a prop
-    
+    username: string | null; // Receive username as a prop
   }
 
 
-  //Define React functional component SAPUnlockCardRenderer with email property passed in as a input to the FC
-  const SAPUnlockCardRenderer: React.FC<SAPUnlockCardRendererProps> = ({ email }) => {
+  //Define React functional component SAPUnlockCardRenderer with email and username property passed in as a input to the FC
+  const SAPUnlockCardRenderer: React.FC<SAPUnlockCardRendererProps> = ({ email, username }) => {
     const cardContainerRef = useRef<HTMLDivElement>(null); //creates a reference to a part of the user interface, specifically an HTML <div> element. 
     const [loading, setLoading] = useState<boolean>(false); //state variable called loading that starts with a value of false. The second part, setLoading, is a function to update the value of loading
     const [result, setResult] = useState<any>(null);
@@ -51,15 +52,32 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
         // Load the correct JSON based on the current card (environment, system, or confirmation)
         if (currentCard === "environment") {
           cardJson = envSelectionCardJson;
+          cardJson.body[0].text = `Dear ${username}, please select the system environment to unlock your SAP or BW account:`; //Display text on the adaptive card
         } else if (currentCard === "system") {
           cardJson = systemSelectionCardJson;
-          cardJson.body[0].text = `Please select the system for the ${actionData?.environment} environment:`; //Display text on the adaptive card
+          // cardJson.body[0].text = `Please select the system for the ${actionData?.environment} environment:`; //Display text on the adaptive card
+          cardJson.body[0].text = `Please select the system in your ${actionData?.environment} environment to unlock your account:`; //Display text on the adaptive card
         } else if (currentCard === "confirmation") {
-          cardJson = confirmationCardJson;
-          // Set environment, system, and email dynamically
-          cardJson.body[1].text = `Environment: ${actionData?.environment|| "Not selected"}`;
-          cardJson.body[2].text = `System: ${actionData?.system|| "Not selected"}`;
-          cardJson.body[3].text = `Email: ${email || "Not available"}`;
+          // VERSION 2:
+          // /////// Updated code for bolding of dynamic values of enviro, syst, user email
+          // // Deep copy of the confirmation card JSON
+          // cardJson = JSON.parse(JSON.stringify(confirmationCardJson));
+          
+          // // Direct text assignment for dynamic values
+          // cardJson.body[1].columns[1].items[0].text = actionData.environment || "Not selected";
+          // cardJson.body[2].columns[1].items[0].text = actionData.system || "Not selected";
+          // cardJson.body[3].columns[1].items[0].text = email || "Not available";
+
+          // VERSION 3:
+          // /////// Updated code for bolding of dynamic values of enviro, syst, user email
+          // // Deep copy of the confirmation card JSON
+          cardJson = JSON.parse(JSON.stringify(confirmationCardJson));
+
+          // Set dynamic values for Environment, System, and Email
+          cardJson.body[1].inlines[1].text = actionData.environment || "Not selected";
+          cardJson.body[2].inlines[1].text = actionData.system || "Not selected";
+          cardJson.body[3].inlines[1].text = email || "Not available";
+          ////////////////////////////////////////////////////////////////////////////
         }
         
         // sets up an event listener for when an action (like submitting a form) is triggered in the Adaptive Card. When the user submits card, an action obj is passed into this function
@@ -135,6 +153,13 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
       console.log("Environment:", environment);
       console.log("System:", system);
 
+      // Log the payload being sent to Workato API
+      console.log("Payload being sent to Workato API:", {
+        environment,
+        system,
+        emailAddr: body?.emailAddr || email // Ensure emailAddr is included
+      });  
+
       try {
         setLoading(true); //set loading state as true to indicate that submission process started.
         setResult(null); // Clear any previous results
@@ -202,7 +227,11 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
   
     return (
       <div className="container">
-        {cardVisible && <div ref={cardContainerRef}></div>}
+        {cardVisible && (
+          <div id="adaptive-card-container"> {/* Add an ID here */}
+            <div ref={cardContainerRef}></div>
+          </div>
+        )}
 
         {/* Only show the "Back" button when not loading */}
         {!cardVisible && !loading && (
@@ -223,7 +252,7 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
           </div>
         )}
         {result && !result?.error && (
-          <div>
+          <div id="requestOutcome"> {/* Add an ID here */}
             <h3>Request Outcome:</h3>
             <pre>{result.message ? result.message : JSON.stringify(result, null, 2)}</pre> {/* Display the API message */}
           </div>

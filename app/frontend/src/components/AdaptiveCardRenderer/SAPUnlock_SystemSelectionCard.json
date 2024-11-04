@@ -5,7 +5,7 @@
     "body": [
         {
             "type": "TextBlock",
-            "text": "Please select the system for the selected environment:",  
+            "text": "Please select the system in your selected environment to unlock your account:",  
             "wrap": true
         },
         {
@@ -13,9 +13,9 @@
             "id": "system",
             "style": "expanded",
             "choices": [
-                { "title": "GUI", "value": "GUI" },
-                { "title": "Fiori", "value": "Fiori" },
-                { "title": "BW", "value": "BW" }
+                { "title": "SAP GUI", "value": "SAP GUI" },
+                { "title": "SAP FIORI", "value": "SAP FIORI" },
+                { "title": "SAP BW/BPC", "value": "SAP BW/BPC" }
             ],
             "placeholder": "Select a system"
         }

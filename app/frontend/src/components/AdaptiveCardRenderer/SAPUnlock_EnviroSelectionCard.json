@@ -7,16 +7,16 @@
             "type": "TextBlock",
             "text": "Please select the environment:",
             "wrap": true,
-            "weight": "Bolder",
-            "size": "Medium"
+            "weight":"default",
+            "size": "default"
         },
         {
             "type": "Input.ChoiceSet",
             "id": "environment",
             "style": "expanded",
             "choices": [
-                { "title": "QA", "value": "QA" },
-                { "title": "Production (PRD)", "value": "Production (PRD)" }
+                { "title": "Production (PRD) System", "value": "Production (PRD)" },
+                { "title": "Quality (QAS) System", "value": "Quality (QAS)" }  
             ],
             "placeholder": "Select an environment"
         }
@@ -25,7 +25,6 @@
         {
             "type": "Action.Submit",
             "title": "Next",
-            "style": "positive",
             "data": {
                 "action": "selectEnvironment"
             }

@@ -671,7 +671,7 @@ useEffect(() => {
                                                     <ACR2 /> // Renders the second adaptive card
                                                 ) : answer[1].choices[0].message.content === "show SAP unlock card" ? (
                                                     <SAPUnlockCardRenderer 
-                                                    email={email}/> // Renders the second adaptive card
+                                                    email={email} username={username}/> // Renders the second adaptive card //added username to bring into adaptive card
                                                 ) : (
                                                 <Answer
                                                     isStreaming={false}

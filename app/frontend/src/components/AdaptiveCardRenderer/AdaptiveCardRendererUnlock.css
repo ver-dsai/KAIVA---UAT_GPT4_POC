@@ -1,0 +1,169 @@
+/* AdaptiveCardRenderer.css */
+
+.container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.log-message {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #0078d4;
+    outline: none;
+}
+
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition:
+        background-color 0.3s,
+        color 0.3s;
+}
+
+.submit-button {
+    color: #fff;
+    background-color: #0078d4;
+}
+
+.submit-button:hover {
+    background-color: #005a9e;
+}
+
+.back-button {
+    color: #0078d4;
+    background-color: #fff;
+    border: 1px solid #0078d4;
+}
+
+.back-button:hover {
+    background-color: #0078d4;
+    color: #fff;
+}
+
+/* Updated the below for Unlock SAP related Adaptive cards */
+#environmentText, #systemText {
+    display: inline;
+    color: #1895dd !important; /* Force the color */
+    margin: 0 !important; /* Remove any default margin */
+    padding: 0 !important;
+    line-height: 1.2; /* Adjust line height for tighter fit */
+}
+
+#emailText {
+    display: inline;
+    color: #1895dd !important; /* Force the color */
+    margin: 0; /* Remove any default margin */
+    text-decoration: underline; /* For underlining of email*/
+    padding: 0 !important;
+    line-height: 1.2; /* Adjust line height for tighter fit */
+}
+
+
+.adaptivecard .textblock {
+    margin: 0 !important; /* Remove any margin */
+    padding: 0 !important; /* Remove any padding */
+}
+
+
+.container .TextBlock {
+    margin: 0; /* Remove margin around TextBlocks */
+    padding: 0; /* Remove padding around TextBlocks */
+}
+
+button[title="Confirm"] {
+    color: #fff; /* White text color */
+    background-color: #28a745; /* Green background color */
+    border: 2px solid #000; /* Black border */
+    border-radius: 4px; /* Optional: Add rounded corners */
+}
+
+button[title="Confirm"]:hover {
+    background-color: #218838; /* Darker green for hover effect */
+    border-color: #000; /* Keep the black border on hover */
+}
+
+button[title="Next"] {
+    color: #fff; /* White text color */
+    background-color: #28a745; /* Green background color */
+    border: 2px solid #000; /* Black border */
+    border-radius: 4px; /* Optional: Add rounded corners */
+}
+
+button[title="Next"]:hover {
+    background-color: #218838; /* Darker green for hover effect */
+    border-color: #000; /* Keep the black border on hover */
+}
+
+#requestOutcome pre {
+    color: #ee9e09b6; /* Orange font color */
+}
+
+/* the below codes will cause all cards content to be squashed together */
+/* #adaptive-card-container .ac-columnSet,
+#adaptive-card-container .ac-column,
+#adaptive-card-container .ac-textBlock {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+#adaptive-card-container .ac-columnSet .ac-column + .ac-column {
+    margin-top: 0 !important;
+}
+
+#adaptive-card-container .ac-columnSet .ac-textBlock {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+#adaptive-card-container .ac-textBlock + .ac-textBlock {
+    margin-top: 0 !important;
+}
+
+#adaptive-card-container .ac-horizontal-separator {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+} */
+
