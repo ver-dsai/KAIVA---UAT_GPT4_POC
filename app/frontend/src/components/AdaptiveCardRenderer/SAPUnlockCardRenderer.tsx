@@ -71,10 +71,10 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
           // VERSION 3:
           // /////// Updated code for bolding of dynamic values of enviro, syst, user email
           // // Deep copy of the confirmation card JSON
-          cardJson = JSON.parse(JSON.stringify(confirmationCardJson));
+          cardJson = JSON.parse(JSON.stringify(confirmationCardJson)); //first converts confirmationCardJson obj to JSON string // parse json string back to new javascript obj
 
           // Set dynamic values for Environment, System, and Email
-          cardJson.body[1].inlines[1].text = actionData.environment || "Not selected";
+          cardJson.body[1].inlines[1].text = actionData.environment || "Not selected"; //sets the text property of a TextRun element inside RichTextBlock located at body[1] in the cardJson. //cardJson.body[1] refers to the second element in the body array of cardJson (the array indexing starts at 0). //inlines[1] accesses the second TextRun element within the RichTextBlock at body[1], which holds the dynamic value for "Environment."
           cardJson.body[2].inlines[1].text = actionData.system || "Not selected";
           cardJson.body[3].inlines[1].text = email || "Not available";
           ////////////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
     return (
       <div className="container">
         {cardVisible && (
-          <div id="adaptive-card-container"> {/* Add an ID here */}
+          <div id="adaptive-card-container"> {/* Add an ID here for referencing to this in CSS styling */}
             <div ref={cardContainerRef}></div>
           </div>
         )}
@@ -252,7 +252,7 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
           </div>
         )}
         {result && !result?.error && (
-          <div id="requestOutcome"> {/* Add an ID here */}
+          <div id="requestOutcome"> {/* Add an ID here for referencing to this in CSS styling */}
             <h3>Request Outcome:</h3>
             <pre>{result.message ? result.message : JSON.stringify(result, null, 2)}</pre> {/* Display the API message */}
           </div>

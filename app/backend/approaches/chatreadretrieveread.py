@@ -61,7 +61,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         Activating your disabled account can be done directly here in KAIVA in 3 easy steps!
 
         Here is how to do it:
-        1. Type the keyword '#sap unlock' or '#unlock sap account' into the chat. This will display the SAP account unlock request form.
+        1. Type the keyword '#𝐬𝐚𝐩 𝐮𝐧𝐥𝐨𝐜𝐤' or '#𝐮𝐧𝐥𝐨𝐜𝐤 𝐬𝐚𝐩 𝐚𝐜𝐜𝐨𝐮𝐧𝐭' into the chat. This will display the SAP account unlock request form.
         2. Fill in your selections for your desired SAP System Environment and SAP System type in the SAP account unlock request form.
         3. Submit the request form. You will receive the request outcome response shortly."
 
