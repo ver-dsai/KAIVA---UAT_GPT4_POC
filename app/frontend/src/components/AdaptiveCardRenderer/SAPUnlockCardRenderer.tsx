@@ -216,14 +216,14 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
 
     
   
-    const handleBackClick = () => {
-      setCardVisible(true); // Show the card again
-      setResult(null); // Clear results
-      setActionData({}); // Reset the form data
-      setBodyData({});
-      setLogMessage("");
-      setCurrentCard("environment"); // Go back to the environment selection
-    };
+    // const handleBackClick = () => {
+    //   setCardVisible(true); // Show the card again
+    //   setResult(null); // Clear results
+    //   setActionData({}); // Reset the form data
+    //   setBodyData({});
+    //   setLogMessage("");
+    //   setCurrentCard("environment"); // Go back to the environment selection
+    // };
   
     return (
       <div className="container">
@@ -234,11 +234,11 @@ type FormData = { //type alias - giving a name to an object. the object cant be 
         )}
 
         {/* Only show the "Back" button when not loading */}
-        {!cardVisible && !loading && (
+        {/* {!cardVisible && !loading && (
           <button className="back-button" onClick={handleBackClick}>
             Back
           </button>
-        )}
+        )} */}
 
         {/* Loading spinner that appears while the API call is in progress */}
         {loading && (
